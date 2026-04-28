@@ -1,0 +1,511 @@
+# ================================================================
+# IMPORT LIBRARIES
+# ================================================================
+
+# Streamlit is used to create the web interface
+import streamlit as st
+
+# Pandas is used for reading and manipulating datasets
+import pandas as pd
+
+# Numpy is used for numerical operations and handling missing values
+import numpy as np
+
+# Plotly Express is used for creating interactive charts
+import plotly.express as px
+
+
+# ================================================================
+# STREAMLIT PAGE CONFIGURATION
+# ================================================================
+
+# Configure the page settings such as browser tab title and layout
+st.set_page_config(
+
+    # Title shown in the browser tab
+    page_title="AI Business Intelligence Assistant",
+
+    # Wide layout allows charts to use full screen width
+    layout="wide"
+)
+
+
+# ================================================================
+# APPLICATION HEADER
+# ================================================================
+
+# Main title of the application
+st.title("AI Business Intelligence Assistant")
+
+# Short description explaining what the app does
+st.write(
+    "Upload a dataset, explore insights and open Power BI dashboards"
+)
+
+
+# ================================================================
+# DEFINE INDUSTRY TYPES
+# ================================================================
+
+# List of industries supported by the system
+INDUSTRIES = [
+
+    "Retail",
+    "SaaS",
+    "FinTech",
+    "Enterprise"
+
+]
+
+
+# ================================================================
+# DEFINE ANALYTICS SUBCATEGORIES
+# ================================================================
+
+# Each industry has multiple analytics sections
+# These represent dashboard sections in Power BI
+
+SUBCATEGORIES = {
+
+    "Retail":[
+
+        "Revenue Insights",
+        "Regional Analysis",
+        "Product Performance",
+        "Customer Insights",
+        "Inventory & Supply Chain",
+        "Promotions & Delivery"
+
+    ],
+
+    "SaaS":[
+
+        "MRR Analytics",
+        "Customer Growth",
+        "Churn Analysis",
+        "Product Usage",
+        "Revenue Forecast",
+        "Subscription Plans"
+
+    ],
+
+    "FinTech":[
+
+        "Transaction Trends",
+        "Fraud Detection",
+        "Risk Analysis",
+        "Customer Segments",
+        "Payment Methods",
+        "Regional Transactions"
+
+    ],
+
+    "Enterprise":[
+
+        "Revenue Overview",
+        "Department Performance",
+        "Cost vs Revenue",
+        "Profitability",
+        "Budget vs Actual",
+        "KPI Monitoring"
+
+    ]
+
+}
+
+
+# ================================================================
+# POWER BI DASHBOARD LINKS
+# ================================================================
+
+# Each industry dashboard link will be opened when the user clicks
+# "Launch Dashboard"
+
+POWERBI_LINKS = {
+
+    "Retail":"PASTE_RETAIL_POWERBI_LINK",
+
+    "SaaS":"PASTE_SAAS_POWERBI_LINK",
+
+    "FinTech":"PASTE_FINTECH_POWERBI_LINK",
+
+    "Enterprise":"PASTE_ENTERPRISE_POWERBI_LINK"
+
+}
+
+
+# ================================================================
+# DATA CLEANING FUNCTION
+# ================================================================
+
+def clean_dataset(df):
+
+    """
+    This function cleans the dataset automatically
+    before sending it to Power BI.
+    """
+
+    # Convert column names to lowercase
+    # Remove spaces and replace with underscore
+    df.columns = (
+        df.columns
+        .str.lower()
+        .str.strip()
+        .str.replace(" ","_")
+    )
+
+    # Remove duplicate rows
+    df = df.drop_duplicates()
+
+    # Replace infinite values with NaN
+    df = df.replace(
+        [np.inf,-np.inf],
+        np.nan
+    )
+
+    # Forward fill missing values
+    df = df.fillna(method="ffill")
+
+    # Return cleaned dataframe
+    return df
+
+
+# ================================================================
+# INDUSTRY DETECTION FUNCTION
+# ================================================================
+
+def detect_industry(columns):
+
+    """
+    This function automatically detects the industry
+    based on column names in the dataset.
+    """
+
+    # Join all column names into one string
+    cols = " ".join(columns).lower()
+
+    # Retail datasets usually contain product/store fields
+    if "product" in cols or "store" in cols:
+        return "Retail"
+
+    # SaaS datasets usually contain subscription metrics
+    if "subscription" in cols or "mrr" in cols:
+        return "SaaS"
+
+    # FinTech datasets contain transaction/payment fields
+    if "transaction" in cols or "payment" in cols:
+        return "FinTech"
+
+    # Enterprise datasets contain department/budget fields
+    if "department" in cols or "budget" in cols:
+        return "Enterprise"
+
+    # If detection fails
+    return None
+
+
+# ================================================================
+# FILE UPLOAD SECTION
+# ================================================================
+
+# Streamlit file uploader widget
+uploaded_file = st.file_uploader(
+
+    "Upload CSV Dataset",
+
+    # Accept only CSV files
+    type=["csv"]
+
+)
+
+
+# ================================================================
+# IF USER UPLOADS DATASET
+# ================================================================
+
+if uploaded_file is not None:
+
+    # Read uploaded CSV file into pandas dataframe
+    df = pd.read_csv(uploaded_file)
+
+
+    # ------------------------------------------------------------
+    # DATASET PREVIEW
+    # ------------------------------------------------------------
+
+    st.subheader("Dataset Preview")
+
+    # Display first 5 rows
+    st.dataframe(df.head())
+
+
+    # ------------------------------------------------------------
+    # CLEAN DATASET
+    # ------------------------------------------------------------
+
+    df = clean_dataset(df)
+
+
+    # ------------------------------------------------------------
+    # EXPORT CLEAN DATASET FOR POWER BI
+    # ------------------------------------------------------------
+
+    # This CSV file will be read by Power BI dashboards
+    df.to_csv(
+        "powerbi_dataset.csv",
+        index=False
+    )
+
+    st.success("Dataset cleaned and exported for Power BI")
+
+
+    # ------------------------------------------------------------
+    # DATASET PROFILE
+    # ------------------------------------------------------------
+
+    st.subheader("Dataset Profile")
+
+    # Create 3 metric columns
+    col1,col2,col3 = st.columns(3)
+
+    # Total rows in dataset
+    col1.metric("Rows",len(df))
+
+    # Total columns
+    col2.metric("Columns",len(df.columns))
+
+    # Total missing values
+    col3.metric("Missing Values",df.isna().sum().sum())
+
+
+    # ------------------------------------------------------------
+    # MISSING VALUE ANALYSIS
+    # ------------------------------------------------------------
+
+    with st.expander("Missing Value Analysis"):
+
+        # Display missing value count for each column
+        st.dataframe(df.isna().sum())
+
+
+    # ------------------------------------------------------------
+    # CORRELATION HEATMAP
+    # ------------------------------------------------------------
+
+    # Select numeric columns only
+    numeric_cols = df.select_dtypes(include=np.number)
+
+    # Heatmap requires at least 2 numeric columns
+    if len(numeric_cols.columns) > 1:
+
+        st.subheader("Correlation Heatmap")
+
+        # Compute correlation matrix
+        corr = numeric_cols.corr()
+
+        # Create heatmap using Plotly
+        fig = px.imshow(corr)
+
+        # Display chart
+        st.plotly_chart(fig,use_container_width=True)
+
+
+    # ------------------------------------------------------------
+    # INDUSTRY DETECTION
+    # ------------------------------------------------------------
+
+    detected = detect_industry(df.columns)
+
+    if detected:
+
+        st.success(f"Detected Industry: {detected}")
+
+        industry = detected
+
+    else:
+
+        # If auto detection fails user selects manually
+        industry = st.selectbox(
+
+            "Select Industry",
+
+            INDUSTRIES
+
+        )
+
+
+    # ------------------------------------------------------------
+    # ANALYTICS SECTION SELECTION
+    # ------------------------------------------------------------
+
+    st.subheader("Select Analytics Section")
+
+    subcategory = st.selectbox(
+
+        "Choose Section",
+
+        SUBCATEGORIES[industry]
+
+    )
+
+    st.write(f"Selected Section: **{subcategory}**")
+
+
+    # ------------------------------------------------------------
+    # QUICK VISUALIZATION
+    # ------------------------------------------------------------
+
+    st.subheader("Quick Data Visualization")
+
+    # User selects numeric column
+    if len(numeric_cols.columns) > 0:
+
+        column = st.selectbox(
+
+            "Select numeric column",
+
+            numeric_cols.columns
+
+        )
+
+        # Histogram chart
+        fig = px.histogram(
+
+            df,
+
+            x=column
+
+        )
+
+        st.plotly_chart(fig,use_container_width=True)
+
+
+    # ------------------------------------------------------------
+    # AUTO INSIGHTS
+    # ------------------------------------------------------------
+
+    st.subheader("Auto Insights")
+
+    if len(numeric_cols.columns) > 0:
+
+        # Pick first numeric column
+        col = numeric_cols.columns[0]
+
+        avg = df[col].mean()
+
+        st.info(
+
+            f"Average {col} value is {round(avg,2)}"
+
+        )
+
+
+    # ------------------------------------------------------------
+    # BUSINESS QUESTIONS
+    # ------------------------------------------------------------
+
+    QUESTIONS = {
+
+        "Revenue Insights":[
+
+            "What is the revenue trend?",
+            "Which category generates most revenue?",
+            "Which region performs best?"
+
+        ],
+
+        "Regional Analysis":[
+
+            "Which region generates most sales?",
+            "Which state generates most revenue?"
+
+        ],
+
+        "Product Performance":[
+
+            "Which products generate most revenue?",
+            "Which brands perform best?"
+
+        ],
+
+        "Customer Insights":[
+
+            "Who are top customers?",
+            "Which segment generates most revenue?"
+
+        ]
+
+    }
+
+
+    if subcategory in QUESTIONS:
+
+        st.subheader("Business Questions")
+
+        q = st.selectbox(
+
+            "Select Question",
+
+            QUESTIONS[subcategory]
+
+        )
+
+        st.info(q)
+
+
+    # ------------------------------------------------------------
+    # OPEN POWER BI DASHBOARD
+    # ------------------------------------------------------------
+
+    st.subheader("Open Power BI Dashboard")
+
+    if st.button("Launch Dashboard"):
+
+        link = POWERBI_LINKS[industry]
+
+        st.markdown(
+
+            f"[Open {industry} Dashboard]({link})",
+
+            unsafe_allow_html=True
+
+        )
+
+
+    # ------------------------------------------------------------
+    # DOWNLOAD CLEAN DATASET
+    # ------------------------------------------------------------
+
+    st.subheader("Download Clean Dataset")
+
+    st.download_button(
+
+        "Download CSV",
+
+        df.to_csv(index=False),
+
+        file_name="clean_dataset.csv",
+
+        mime="text/csv"
+
+    )
+
+
+# ================================================================
+# IF USER HAS NOT UPLOADED DATASET
+# ================================================================
+
+else:
+
+    st.info("Upload a dataset to begin analysis")
+
+
+# ================================================================
+# FOOTER
+# ================================================================
+
+st.caption(
+
+"Power BI dashboards read data from powerbi_dataset.csv. Refresh Power BI to update charts."
+
+)
