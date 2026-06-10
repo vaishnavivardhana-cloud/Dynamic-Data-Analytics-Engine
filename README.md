@@ -300,7 +300,16 @@ Dynamic-Data-Analytics-Engine/
 
 ![Retail Dashboard](Screenshots/Retail.png)
 
+### Features
 
+- Executive Overview
+- Sales Trend Analysis
+- Regional Performance
+- Product Performance
+- Customer Insights
+- Inventory Analytics
+- Forecasting
+  
 ## ☁️ SaaS Dashboard
 
 ![SaaS Dashboard](Screenshots/Saas.png)
