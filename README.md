@@ -266,39 +266,85 @@ Dynamic-Data-Analytics-Engine/
 
 ---
 
-# 📸 Application Screenshots
+# 📸 Application Walkthrough
 
 ## Streamlit Application
 
-![Streamlit](docs/images/streamlit_home.png)
+### Home Screen
+
+![Streamlit Home](Screenshots/Streamlit1.png)
 
 ---
 
-## Retail Dashboard
+### Dataset Upload & Profiling
 
-![Retail](docs/images/retail_dashboard.png)
-
----
-
-## SaaS Dashboard
-
-![SaaS](docs/images/saas_dashboard.png)
+![Dataset Upload](Screenshots/Streamlit2.png)
 
 ---
 
-## FinTech Dashboard
+### Industry Detection & AI Insights
 
-![FinTech](docs/images/fintech_dashboard.png)
-
----
-
-## Enterprise Dashboard
-
-![Enterprise](docs/images/enterprise_dashboard.png)
+![Industry Detection](Screenshots/Streamlit3.png)
 
 ---
 
-# ⚙️ Installation
+### Dashboard Launcher
+
+![Dashboard Launcher](Screenshots/Streamlit4.png)
+
+---
+
+# 📊 Power BI Dashboards
+
+## 🛍️ Retail Dashboard
+
+![Retail Dashboard](Screenshots/Retail.png)
+
+
+## ☁️ SaaS Dashboard
+
+![SaaS Dashboard](Screenshots/Saas.png)
+
+### Features
+
+- Executive Overview
+- Revenue Analytics
+- Customer Growth
+- Churn Analysis
+- Product Analytics
+- Business Forecasting
+
+---
+
+## 💳 FinTech Dashboard
+
+![FinTech Dashboard](Screenshots/Fintech.png)
+
+### Features
+
+- Executive Overview
+- Transaction Analysis
+- Fraud Detection
+- Customer Insights
+- Payment Analytics
+- Business Forecasting
+
+---
+
+## 🏢 Enterprise Dashboard
+
+![Enterprise Dashboard](Screenshots/Enterprise.png)
+
+### Features
+
+- Executive Overview
+- Customer Analytics
+- Sales Analytics
+- Operational Analytics
+- HR Insights
+- Business Forecasting
+
+---
 
 ## Clone Repository
 
