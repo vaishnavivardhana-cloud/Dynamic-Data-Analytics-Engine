@@ -91,8 +91,6 @@ Business Insights
 
 # 🔄 User Workflow
 
-![Workflow](docs/images/workflow.png)
-
 ```text
 Upload Dataset
       ↓
